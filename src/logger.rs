@@ -7,6 +7,7 @@ use crate::result::IronResult;
 use crate::runtime::GLOBAL_HAD_ALREADY_INITIALIZED;
 use crate::sync::SyncStdoutLock;
 
+#[derive(Clone)]
 pub(crate) struct IronLogger
 {
     stdout: Arc<Mutex<BufWriter<SyncStdoutLock>>>
@@ -37,6 +38,7 @@ impl IronLogger
         )
     }
 
+    #[allow(dead_code)]
     #[inline]
     pub fn log<D:Display>(&mut self,log:D)
     {
