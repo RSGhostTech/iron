@@ -1,0 +1,1 @@
+pub(crate) static mut GLOBAL_HAD_ALREADY_INITIALIZED:bool = false;

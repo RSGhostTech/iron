@@ -1,5 +1,5 @@
 [package]
-name = "module_lib"
+name = "iron"
 version = "0.1.0"
 edition = "2021"
 

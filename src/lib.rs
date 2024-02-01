@@ -1,14 +1,47 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use crate::logger::IronLogger;
+use crate::result::IronResult;
+
+mod result;
+mod logger;
+mod runtime;
+mod sync;
+
+pub mod prelude
+{
+    pub use crate::result::marker::*;
+}
+
+#[allow(private_interfaces)]
+#[inline]
+pub fn init() -> IronResult<IronLogger>
+{
+    IronLogger::new()
+}
+
+#[allow(private_interfaces)]
+#[inline]
+pub fn free(logger:IronLogger)
+{
+    drop(logger)
 }
 
 #[cfg(test)]
-mod tests {
+mod tests
+{
     use super::*;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn init_log()
+    {
+        let log = init().unwrap();
+        drop(log);
+        let _ = init().unwrap();
+    }
+
+    #[test]
+    fn write_test()
+    {
+        let mut log = init().unwrap();
+        log.log("Hello!")
     }
 }
