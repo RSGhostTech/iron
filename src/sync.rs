@@ -1,7 +1,7 @@
 use std::borrow::{Borrow, BorrowMut};
 use std::io::{stdout, StdoutLock, Write};
 
-pub struct SyncStdoutLock
+pub(crate) struct SyncStdoutLock
 {
     wrap:StdoutLock<'static>
 }

@@ -1,5 +1,4 @@
 use std::fmt::{Debug, Formatter};
-use crate::result::marker::IronLoggerError;
 
 #[derive(Clone, Copy)]
 pub enum InitError
@@ -7,15 +6,22 @@ pub enum InitError
     HadAlreadyInitialize,
 }
 
-impl Debug for InitError
+impl AsRef<str> for InitError
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    fn as_ref(&self) -> &'static str
     {
         match self
         {
-            &InitError::HadAlreadyInitialize => f.pad("HadAlreadyInitialize")
+            InitError::HadAlreadyInitialize => "HadAlreadyInitialize"
         }
     }
 }
 
-impl IronLoggerError for InitError {}
+impl Debug for InitError
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    {
+        f.pad(self.as_ref())
+    }
+}
+

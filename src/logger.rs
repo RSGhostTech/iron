@@ -8,7 +8,7 @@ use crate::runtime::GLOBAL_HAD_ALREADY_INITIALIZED;
 use crate::sync::SyncStdoutLock;
 
 #[derive(Clone)]
-pub(crate) struct IronLogger
+pub struct IronLogger
 {
     stdout: Arc<Mutex<BufWriter<SyncStdoutLock>>>
 }
@@ -21,7 +21,7 @@ impl IronLogger
         unsafe {
             if GLOBAL_HAD_ALREADY_INITIALIZED
             {
-                return Err(Box::new(InitError::HadAlreadyInitialize))
+                return Err(InitError::HadAlreadyInitialize.as_ref())
             }
 
             GLOBAL_HAD_ALREADY_INITIALIZED = true
@@ -52,7 +52,8 @@ impl IronLogger
     }
 }
 
-impl Drop for IronLogger {
+impl Drop for IronLogger
+{
     fn drop(&mut self)
     {
         self.flush().unwrap();
