@@ -1,11 +1,10 @@
-use crate::result::IronResult;
-
 mod result;
 mod logger;
 mod runtime;
 mod sync;
 
 pub use logger::IronLogger;
+pub use result::IronResult;
 
 #[allow(private_interfaces)]
 #[inline]
