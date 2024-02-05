@@ -6,11 +6,6 @@ mod logger;
 mod runtime;
 mod sync;
 
-pub mod prelude
-{
-    pub use crate::result::marker::*;
-}
-
 #[allow(private_interfaces)]
 #[inline]
 pub fn init() -> IronResult<IronLogger>
