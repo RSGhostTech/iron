@@ -3,7 +3,6 @@ pub mod metadata;
 pub mod router;
 pub mod service;
 
-
 pub(super) mod functions {
     use http::Version;
 

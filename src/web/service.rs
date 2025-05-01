@@ -1,5 +1,6 @@
 use crate::web::client::HTTPClient;
 use crate::web::router::{Route, ServiceRouter};
+use serde_json::to_string;
 use tokio::io;
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio::runtime::Runtime;
@@ -78,13 +79,18 @@ impl<'a> HTTPService<'a> {
                 let metadata = client.metadata().clone();
                 let socket = client.addr();
                 match client.response(&route).await {
-                    Ok(_) => {
-                        log::info!(
-                            "Has routed {} -> {} ({})",
-                            metadata.path,
-                            route.route_to(),
-                            socket.to_string()
-                        );
+                    Ok(mut responding) => {
+                        responding.mut_will_response().add_content_length();
+                        if let Err(err) = responding.send().await {
+                            log::error!("{}", err.to_string());
+                        } else {
+                            log::info!(
+                                "Has routed {} -> {} ({})",
+                                metadata.path,
+                                route.route_to(),
+                                socket.to_string()
+                            );
+                        }
                     }
                     Err(err) => {
                         log::error!("{}", err.to_string());

@@ -43,10 +43,7 @@ pub struct Responding {
 
 impl Responding {
     pub fn new(client: HTTPClient, will: WillResponse) -> Self {
-        Self {
-            client,
-            will,
-        }
+        Self { client, will }
     }
 
     pub fn mut_will_response(&mut self) -> &mut WillResponse {

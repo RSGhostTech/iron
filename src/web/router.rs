@@ -75,12 +75,18 @@ pub struct WillResponse {
 
 impl WillResponse {
     pub fn new(data: Vec<u8>) -> Self {
-        WillResponse { data, headers: HashMap::new(), version: Version::HTTP_11, state: StatusCode::OK }
+        WillResponse {
+            data,
+            headers: HashMap::new(),
+            version: Version::HTTP_11,
+            state: StatusCode::OK,
+        }
     }
 
     #[inline]
     pub fn add_content_length(&mut self) {
-        self.headers.insert("Content-Length".to_string(), format!("{}", self.data.len()));
+        self.headers
+            .insert("Content-Length".to_string(), format!("{}", self.data.len()));
     }
 
     #[inline]
@@ -105,7 +111,8 @@ impl WillResponse {
             version_into_string(self.version),
             self.state.as_u16(),
             self.state.canonical_reason().unwrap()
-        ).into_bytes();
+        )
+        .into_bytes();
 
         let mut b2 = Vec::new();
         for (key, value) in &self.headers {
