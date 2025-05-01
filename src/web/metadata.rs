@@ -1,3 +1,4 @@
+use crate::web::functions::version_from_str;
 use http::{Method, Version};
 use std::collections::HashMap;
 
@@ -11,19 +12,8 @@ pub struct HTTPMetadata {
 }
 
 pub(super) mod functions {
-    use http::{Method, Version};
+    use http::Method;
     use std::str::FromStr;
-
-    /// 由于http crate没有做&str转换Version的方式，故实现
-    #[inline]
-    pub(super) fn version_from_str(s: &str) -> Option<Version> {
-        match s {
-            "HTTP/0.9" => Some(Version::HTTP_09),
-            "HTTP/1.0" => Some(Version::HTTP_10),
-            "HTTP/1.1" => Some(Version::HTTP_11),
-            _ => None,
-        }
-    }
 
     /// &str转换为Method
     #[inline]
@@ -45,7 +35,7 @@ impl HTTPMetadata {
         let method_path_version = lines.next()?.split_whitespace().collect::<Vec<_>>();
         let method = functions::method_from_str(method_path_version.get(0)?)?;
         let path = method_path_version.get(1)?.to_string();
-        let version = functions::version_from_str(method_path_version.get(2)?)?;
+        let version = version_from_str(method_path_version.get(2)?)?;
 
         //kv行，如果有字符串是空字符串则接下来是body行
         let mut kv = HashMap::new();

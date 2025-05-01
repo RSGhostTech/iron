@@ -1,4 +1,4 @@
-#![feature(async_fn_traits)]
+#![allow(dead_code)]
 
 pub mod utils;
 pub mod web;

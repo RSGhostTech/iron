@@ -30,9 +30,9 @@ pub(super) mod functions {
         if metadata.kv.is_empty() {
             ClientRequest::Path(metadata.path.clone())
         } else {
-            ClientRequest::KeyValue(
+            ClientRequest::Keys(
                 metadata.path.clone(),
-                metadata.kv.clone().into_iter().collect(),
+                metadata.kv.clone().into_iter().map(|(k, _)| k).collect(),
             )
         }
     }
@@ -72,16 +72,18 @@ impl<'a> HTTPService<'a> {
 
             let service_route = self.router.clone();
             self.runtime.spawn(async move {
-                let mut client = client;
+                let client = client;
                 let request = functions::get_client_request(client.metadata());
-                let route = service_route.route(request);
+                let route = service_route.route(&request);
+                let metadata = client.metadata().clone();
+                let socket = client.addr();
                 match client.response(&route).await {
                     Ok(_) => {
                         log::info!(
                             "Has routed {} -> {} ({})",
-                            client.metadata().path,
+                            metadata.path,
                             route.route_to(),
-                            client.addr().to_string()
+                            socket.to_string()
                         );
                     }
                     Err(err) => {
