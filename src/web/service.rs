@@ -40,7 +40,7 @@ pub(super) mod functions {
 
 pub struct HTTPService {
     listener: TcpListener,
-    router: Arc<ServiceRouter>,
+    router: ServiceRouter,
     runtime: Runtime,
 }
 impl HTTPService {
@@ -51,7 +51,7 @@ impl HTTPService {
     ) -> io::Result<Self> {
         Ok(Self {
             listener: TcpListener::bind(addr).await?,
-            router: Arc::new(ServiceRouter::new(default_route)),
+            router: ServiceRouter::new(default_route),
             runtime,
         })
     }
