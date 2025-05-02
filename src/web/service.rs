@@ -1,6 +1,6 @@
+use std::sync::Arc;
 use crate::web::client::HTTPClient;
 use crate::web::router::{Route, ServiceRouter};
-use serde_json::to_string;
 use tokio::io;
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio::runtime::Runtime;
@@ -11,48 +11,47 @@ pub(super) mod functions {
     use crate::web::router::ClientRequest;
     use std::io::ErrorKind;
     use tokio::io;
-    use tokio::io::AsyncReadExt;
     use tokio::net::TcpStream;
 
+    #[inline]
     pub(super) async fn accept(mut stream: TcpStream) -> io::Result<HTTPClient> {
-        let mut buffer = [0; 4096];
-        let len = stream.read(&mut buffer).await?;
-        if let Some(client) = HTTPClient::new(stream, &buffer[..len]) {
-            Ok(client)
-        } else {
-            Err(io::Error::new(
-                ErrorKind::ConnectionAborted,
-                "Because of bad http request,connect aborted",
-            ))
-        }
+        let mut buf = Vec::new();
+        io::copy(&mut stream, &mut buf).await?;
+        
+        HTTPClient::new(stream, &buf)
+            .ok_or_else(|| io::Error::new(ErrorKind::ConnectionAborted,"Because of bad http request,connect aborted"))
     }
 
+    #[inline]
     pub(super) fn get_client_request(metadata: &HTTPMetadata) -> ClientRequest {
-        if metadata.kv.is_empty() {
-            ClientRequest::Path(metadata.path.clone())
-        } else {
-            ClientRequest::Keys(
-                metadata.path.clone(),
-                metadata.kv.clone().into_iter().map(|(k, _)| k).collect(),
-            )
+        let path = metadata.path.clone();
+        let keys = (!metadata.kv.is_empty()).then(|| {
+            let mut temp = Vec::with_capacity(metadata.kv.len());
+            metadata.kv.keys().for_each(|k| temp.push(k.clone()));
+            temp
+        });
+        
+        match keys {
+            Some(k) => ClientRequest::Keys(path,k),
+            None => ClientRequest::Path(path),
         }
     }
 }
 
-pub struct HTTPService<'a> {
+pub struct HTTPService {
     listener: TcpListener,
-    router: ServiceRouter,
-    runtime: &'a Runtime,
+    router: Arc<ServiceRouter>,
+    runtime: Runtime,
 }
-impl<'a> HTTPService<'a> {
+impl HTTPService {
     pub async fn new<A: ToSocketAddrs>(
         addr: A,
-        runtime: &'a Runtime,
+        runtime: Runtime,
         default_route: Route,
     ) -> io::Result<Self> {
         Ok(Self {
             listener: TcpListener::bind(addr).await?,
-            router: ServiceRouter::new(default_route),
+            router: Arc::new(ServiceRouter::new(default_route)),
             runtime,
         })
     }
