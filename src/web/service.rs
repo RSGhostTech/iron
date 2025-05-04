@@ -1,6 +1,6 @@
-use std::sync::Arc;
 use crate::web::client::HTTPClient;
 use crate::web::router::{Route, ServiceRouter};
+use std::sync::Arc;
 use tokio::io;
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio::runtime::Runtime;
@@ -17,9 +17,13 @@ pub(super) mod functions {
     pub(super) async fn accept(mut stream: TcpStream) -> io::Result<HTTPClient> {
         let mut buf = Vec::new();
         io::copy(&mut stream, &mut buf).await?;
-        
-        HTTPClient::new(stream, &buf)
-            .ok_or_else(|| io::Error::new(ErrorKind::ConnectionAborted,"Because of bad http request,connect aborted"))
+
+        HTTPClient::new(stream, &buf).ok_or_else(|| {
+            io::Error::new(
+                ErrorKind::ConnectionAborted,
+                "Because of bad http request,connect aborted",
+            )
+        })
     }
 
     #[inline]
@@ -30,9 +34,9 @@ pub(super) mod functions {
             metadata.kv.keys().for_each(|k| temp.push(k.clone()));
             temp
         });
-        
+
         match keys {
-            Some(k) => ClientRequest::Keys(path,k),
+            Some(k) => ClientRequest::Keys(path, k),
             None => ClientRequest::Path(path),
         }
     }
