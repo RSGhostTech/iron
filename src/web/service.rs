@@ -1,5 +1,5 @@
 use crate::web::client::HTTPClient;
-use crate::web::router::{Route, ServiceRouter};
+use crate::web::router::{Router, ServiceRouter};
 use std::sync::Arc;
 use tokio::io;
 use tokio::net::{TcpListener, ToSocketAddrs};
@@ -28,34 +28,38 @@ pub(super) mod functions {
 
     #[inline]
     pub(super) fn get_client_request(metadata: &HTTPMetadata) -> ClientRequest {
-        let path = metadata.path.clone();
-        let keys = (!metadata.kv.is_empty()).then(|| {
-            let mut temp = Vec::with_capacity(metadata.kv.len());
-            metadata.kv.keys().for_each(|k| temp.push(k.clone()));
-            temp
-        });
+        if metadata.path.is_empty() {
+            return ClientRequest::Path(String::from("/"));
+        }
 
-        match keys {
-            Some(k) => ClientRequest::Keys(path, k),
-            None => ClientRequest::Path(path),
+        let path = metadata.path.clone();
+        if metadata.kv.is_empty() {
+            ClientRequest::Path(path)
+        } else {
+            let mut vec = Vec::with_capacity(metadata.kv.len());
+            for (k, v) in &metadata.kv {
+                vec.push((k.clone(), v.clone()));
+            }
+
+            ClientRequest::Keys(path, vec)
         }
     }
 }
 
 pub struct HTTPService {
     listener: TcpListener,
-    router: ServiceRouter,
+    router: Arc<ServiceRouter>,
     runtime: Runtime,
 }
 impl HTTPService {
     pub async fn new<A: ToSocketAddrs>(
         addr: A,
         runtime: Runtime,
-        default_route: Route,
+        default_route: Router,
     ) -> io::Result<Self> {
         Ok(Self {
             listener: TcpListener::bind(addr).await?,
-            router: ServiceRouter::new(default_route),
+            router: Arc::new(ServiceRouter::new(default_route)),
             runtime,
         })
     }

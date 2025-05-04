@@ -19,14 +19,13 @@ pub(super) mod functions {
 
     /// 由于http crate没有做Version转换String的方式，故实现
     #[inline]
-    pub(super) fn version_into_string(version: Version) -> String {
+    pub(super) fn version_into_bytes(version: Version) -> &'static [u8] {
         match version {
-            Version::HTTP_09 => String::from("HTTP/0.9"),
-            Version::HTTP_10 => String::from("HTTP/1.0"),
-            Version::HTTP_11 => String::from("HTTP/1.1"),
-            Version::HTTP_2 => String::from("HTTP/2"),
-            Version::HTTP_3 => String::from("HTTP/3"),
-            _ => String::from("HTTP/1.1"),
+            Version::HTTP_09 => b"HTTP/0.9",
+            Version::HTTP_10 => b"HTTP/1.0",
+            Version::HTTP_2 => b"HTTP/2",
+            Version::HTTP_3 => b"HTTP/3",
+            _ => b"HTTP/1.1",
         }
     }
 }

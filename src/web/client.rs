@@ -1,5 +1,5 @@
 use crate::web::metadata::HTTPMetadata;
-use crate::web::router::{Route, WillResponse};
+use crate::web::router::{Router, WillResponse};
 use std::net::SocketAddr;
 use tokio::io;
 use tokio::io::AsyncWriteExt;
@@ -30,7 +30,7 @@ impl HTTPClient {
         self.stream.write_all(bytes).await
     }
 
-    pub async fn response(self, route: &Route) -> io::Result<Responding> {
+    pub async fn response(self, route: &Router) -> io::Result<Responding> {
         let b = route.response().await?;
         Ok(Responding::new(self, b))
     }
